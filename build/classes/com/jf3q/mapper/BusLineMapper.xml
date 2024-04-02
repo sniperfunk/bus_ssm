@@ -1,0 +1,56 @@
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--namespace命名空间，为了对sql语句进行隔离，方便管理，mapper开发dao方式，使用namespace有特殊作用
+mapper代理开发时将namespace指定为mapper接口的全限定名
+ -->
+<mapper namespace="com.jf3q.mapper.BusLineMapper">
+<!--在mapper.xml文件中配置很多的sql语句，执行每个sql语句时，封装为MappedStatement对象
+mapper.xml以statement为单位管理sql语句
+ -->
+	<!-- 添加公交车次记录 -->
+	<insert id="addBusLine" parameterType="busLine" useGeneratedKeys="true"  keyProperty="lineId">
+		insert into t_busLine(name,startStation,endStation,startTime,endTime,company,tjzd,ticket,points_ids) values
+		(#{name},#{startStation.stationId},#{endStation.stationId},#{startTime},#{endTime},#{company},#{tjzd},#{ticket},#{points_ids})
+	</insert>
+
+	<insert id="addAbc" parameterType="busLine" useGeneratedKeys="true"  keyProperty="lineId">
+		insert into t_abc(name,startStation,endStation,startTime,endTime,company,tjzd,ticket,points_ids) values
+		(#{name},#{startStation.stationId},#{endStation.stationId},#{startTime},#{endTime},#{company},#{tjzd},#{ticket},#{points_ids})
+	</insert>
+
+	<!-- 按照查询条件分页查询公交车次记录 -->
+	<select id="queryBusLine" resultMap="busLineMap" >
+		select * from t_busline ${where} limit #{startIndex},#{pageSize}
+	</select>
+	<resultMap id="busLineMap" type="busLine">
+        <id property="lineId" column="lineId" />
+        <association property="startStation" column="startStation" select="com.jf3q.mapper.BusStationMapper.getBusStation" />
+        <association property="endStation" column="endStation" select="com.jf3q.mapper.BusStationMapper.getBusStation" />
+
+    </resultMap>
+
+    <!-- 按照查询条件查询所有公交车次记录 -->
+	<select id="queryBusLineList" resultMap="busLineMap" >
+		select * from t_busLine ${where}
+	</select>
+
+    <!-- 按照查询条件的公交车次记录数 -->
+	<select id="queryBusLineCount" resultType="int">
+		select count(*) from t_busLine ${where}
+	</select>
+
+	<!-- 根据主键查询某个公交车次记录 -->
+	<select id="getBusLine" parameterType="int" resultMap="busLineMap">
+		select * from t_busLine where t_busLine.lineId = #{lineId}
+	</select>
+
+	<!-- 更新公交车次记录 -->
+	<update id="updateBusLine" parameterType="busLine">
+		update t_busLine set name=#{name},startStation=#{startStation.stationId},endStation=#{endStation.stationId},startTime=#{startTime},endTime=#{endTime},company=#{company},tjzd=#{tjzd},ticket=#{ticket},points_ids=#{points_ids} where lineId = #{lineId}
+	</update>
+
+	<!-- 删除公交车次记录 -->
+	<delete id="deleteBusLine" parameterType="int">
+		delete from t_busLine where lineId=#{lineId}
+	</delete>
+
+</mapper>

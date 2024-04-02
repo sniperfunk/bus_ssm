@@ -1,0 +1,48 @@
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--namespace命名空间，为了对sql语句进行隔离，方便管理，mapper开发dao方式，使用namespace有特殊作用
+mapper代理开发时将namespace指定为mapper接口的全限定名
+ -->
+<mapper namespace="com.jf3q.mapper.StationtextMapper">
+<!--在mapper.xml文件中配置很多的sql语句，执行每个sql语句时，封装为MappedStatement对象
+mapper.xml以statement为单位管理sql语句
+ -->
+	<!-- 添加留言信息记录 -->
+	<insert id="addStationtext" parameterType="stationtext">
+		insert into t_stationtext(userName,content,email,addTime) values
+		(#{userName},#{content},#{email},#{addTime})
+	</insert>
+
+	<!-- 按照查询条件分页查询留言信息记录 -->
+	<select id="queryStationtext" resultMap="stationtextMap" >
+		select t_stationtext.* from t_stationtext ${where}  limit #{startIndex},#{pageSize}
+	</select>
+	<resultMap id="stationtextMap" type="stationtext">
+        <id property="stationtextId" column="stationtextId" />
+    </resultMap>
+
+    <!-- 按照查询条件查询所有留言信息记录 -->
+	<select id="queryStationtextList" resultMap="stationtextMap" >
+		select t_stationtext.* from t_stationtext ${where}
+	</select>
+
+    <!-- 按照查询条件的留言信息记录数 -->
+	<select id="queryStationtextCount" resultType="int">
+		select count(*) from t_stationtext ${where}
+	</select>
+
+	<!-- 根据主键查询某个留言信息记录 -->
+	<select id="getStationtext" parameterType="int" resultMap="stationtextMap">
+		select * from t_stationtext where t_stationtext.stationtextId = #{stationtextId}
+	</select>
+
+	<!-- 更新留言信息记录 -->
+	<update id="updateStationtext" parameterType="stationtext">
+		update t_stationtext set title=#{title},content=#{content},userObj=#{userObj.user_name},addTime=#{addTime} where stationtextId = #{stationtextId}
+	</update>
+
+	<!-- 删除留言信息记录 -->
+	<delete id="deleteStationtext" parameterType="int">
+		delete from t_stationtext where stationtextId=#{stationtextId}
+	</delete>
+
+</mapper>

@@ -1,0 +1,58 @@
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--namespace命名空间，为了对sql语句进行隔离，方便管理，mapper开发dao方式，使用namespace有特殊作用  
+mapper代理开发时将namespace指定为mapper接口的全限定名  
+ -->
+<mapper namespace="com.jf3q.mapper.StationLineMapper"> 
+<!--在mapper.xml文件中配置很多的sql语句，执行每个sql语句时，封装为MappedStatement对象 
+mapper.xml以statement为单位管理sql语句  
+ -->
+	<!-- 添加公交车次记录 -->
+	<insert id="addStationLine" parameterType="stationLine" >
+		insert into t_station_line(sl_station_id,sl_line_id,sl_sort) values 
+		(#{sl_station_id},#{sl_line_id},#{sl_sort})
+	</insert>
+	<!--删除某公交车次的所有中间表记录 -->
+	<delete id="deleteByLineId" parameterType="int">
+		delete from t_station_line where sl_line_id=#{lineId}
+	</delete>
+	<!--批量删除 -->
+	<delete id="batchdeleteEquipment" parameterType="String">
+		delete form t_station_line where sl_line_id in
+		<foreach collection="list" item="id" open="(" separator=","
+			close=")">
+			#{lineIds}
+		</foreach>
+	</delete>
+	<!-- 查询直达方案 -->
+	<select id="getLineIdBystation" parameterType="int"  resultType="map">
+		select A.sl_line_id from
+		(select sl_line_id from t_station_line where sl_station_id = #{startStationId}) A,
+		(select sl_line_id from t_station_line where sl_station_id = #{endStationId}) B
+		where A.sl_line_id = B.sl_line_id
+	</select>
+	
+	<!-- 查询一次换乘方案得到换乘站的id -->
+	<select id="getTransStationBystation" parameterType="int"  resultType="map">
+		select A.sl_station_id from
+		(
+		select distinct sl_station_id from t_station_line where sl_line_id in
+		(select sl_line_id from t_station_line where sl_station_id = #{startStationId})
+		)A,
+		(
+		select distinct sl_station_id from t_station_line where sl_line_id in
+		(select sl_line_id from t_station_line where sl_station_id = #{endStationId})
+		)B
+		where A.sl_station_id= B.sl_station_id
+	</select>
+	<!-- 查询经过该站点的所有车次 -->
+	<select id="getBusLines"  resultMap="busLineMap">
+		select * from t_busline WHERE lineId in (
+			select sl_line_id from t_station_line where sl_station_id = #{stationId}
+		)
+	</select>
+	<resultMap id="busLineMap" type="busLine">
+        <id property="lineId" column="lineId" />
+        <association property="startStation" column="startStation" select="com.jf3q.mapper.BusStationMapper.getBusStation" />
+        <association property="endStation" column="endStation" select="com.jf3q.mapper.BusStationMapper.getBusStation" />
+    </resultMap>
+</mapper>
